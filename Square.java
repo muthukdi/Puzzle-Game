@@ -3,6 +3,7 @@ import java.awt.*;
 public class Square {
 
 	int x, y, number;
+	int solvedX, solvedY;
 	Color color;
 	public void moveRight() {
 		x += 100;
@@ -37,6 +38,8 @@ public class Square {
 	public Square(int x, int y, int number) {
 		this.x = x;
 		this.y = y;
+		solvedX = x;
+		solvedY = y;
 		this.number = number;
 		this.color = Color.BLUE;
 	}

@@ -1,19 +1,15 @@
 import java.awt.*;
+import javax.swing.*;
 import java.awt.event.*;
-import java.io.*;
-import javax.sound.sampled.*;
 
-public class PuzzleListener implements MouseListener {
-
+public class PuzzleListener implements MouseListener, ActionListener {
 	PuzzleArea area;
-	Clip sound1;
-	public void playSound() {
-		if (!sound1.isRunning()) {
-			sound1.start();
-			sound1.setFramePosition(0);
-		}
-	}
+	Timer timer;
+	JMenuItem scramble;
 	public void mousePressed(MouseEvent e) {
+		if (area.animation) {
+			return;
+		}
 		int xValue = e.getX() + 100;
 		int yValue = e.getY() + 100;
 		Square square = null;
@@ -23,28 +19,42 @@ public class PuzzleListener implements MouseListener {
 				break;
 			}
 		}
-		String direction = area.checkEmptySpace(xValue, yValue);
-		if (direction.equals("right")) {
-			square.moveRight();
-			playSound();
+		if (square != null) {
+			String direction = area.checkEmptySpace(xValue, yValue);
+			Choice choice = new Choice(square, direction);
+			area.performMove(choice);
+			area.lastSquareMoved = square;
+			area.updateImage();
 		}
-		else if (direction.equals("right")) {
-			square.moveRight();
-			playSound();
+		if (area.isSolved()) {
+			JOptionPane.showMessageDialog(area,"Congratulations! You have solved the puzzle!");
 		}
-		else if (direction.equals("left")) {
-			square.moveLeft();
-			playSound();
+	}
+	public void actionPerformed(ActionEvent e) {
+		Object source = e.getSource();
+		if (source == timer) {
+			area.scramble();
 		}
-		else if (direction.equals("up")) {
-			square.moveUp();
-			playSound();
+		else if (source == scramble) {
+			if (!timer.isRunning()) {
+				for (int i = 0; i < area.squareArray.length; i++) {
+					area.squareArray[i].color = Color.RED;
+				}
+				area.updateImage();
+				timer.start();
+				area.animation = true;
+				scramble.setText("Stop Scramble");
+			}
+			else {
+				timer.stop();
+				for (int i = 0; i < area.squareArray.length; i++) {
+					area.squareArray[i].color = Color.BLUE;
+				}
+				area.animation = false;
+				scramble.setText("Start Scramble");
+				area.updateImage();
+			}
 		}
-		else if (direction.equals("down")) {
-			square.moveDown();
-			playSound();
-		}
-		area.updateImage();
 	}
 	public void mouseReleased(MouseEvent e) {}
 	public void mouseClicked(MouseEvent e) {}
@@ -52,13 +62,10 @@ public class PuzzleListener implements MouseListener {
 	public void mouseEntered(MouseEvent e) {}
 	public PuzzleListener(PuzzleArea area) {
 		this.area = area;
-		this.area.addMouseListener(this);
-		try {
-			AudioInputStream input = AudioSystem.getAudioInputStream(new File("collect.wav"));
-			sound1 = AudioSystem.getClip();
-			sound1.open(input);
-		}
-		catch (Exception e) {}
+		area.addMouseListener(this);
+		scramble = area.menuBar.getMenu(0).getItem(0);
+		scramble.addActionListener(this);
+		timer = new Timer(300,this);
 	}
 	
 }

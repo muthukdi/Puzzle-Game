@@ -1,5 +1,5 @@
 import java.awt.*;
-// This is a commment.
+
 public class Puzzle {
 
 	public static void main(String[] args) {
